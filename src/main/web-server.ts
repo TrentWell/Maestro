@@ -264,7 +264,8 @@ export class WebServer {
     });
 
     // Generate a new security token (UUID v4)
-    this.securityToken = randomUUID();
+    // Container deployment: use MAESTRO_WEB_TOKEN env var for a stable, predictable URL
+    this.securityToken = process.env.MAESTRO_WEB_TOKEN || randomUUID();
     logger.debug('Security token generated', LOG_CONTEXT);
 
     // Determine web assets path (production vs development)
@@ -868,3 +869,4 @@ export class WebServer {
     return this.server;
   }
 }
+
