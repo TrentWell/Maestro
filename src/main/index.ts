@@ -322,9 +322,14 @@ function safeSend(channel: string, ...args: unknown[]): void {
  * Called when user enables the web interface.
  */
 function createWebServer(): WebServer {
-  // Use custom port if enabled, otherwise 0 for random port assignment
-  const useCustomPort = store.get('webInterfaceUseCustomPort', false);
-  const customPort = store.get('webInterfaceCustomPort', 8080);
+  // Container deployment: MAESTRO_WEB_PORT env var overrides stored settings
+  // This allows a fixed, discoverable port without requiring UI interaction
+  const useCustomPort = process.env.MAESTRO_WEB_PORT
+    ? true
+    : store.get('webInterfaceUseCustomPort', false);
+  const customPort = process.env.MAESTRO_WEB_PORT
+    ? parseInt(process.env.MAESTRO_WEB_PORT, 10)
+    : store.get('webInterfaceCustomPort', 8080);
   const port = useCustomPort ? customPort : 0;
   const server = new WebServer(port); // Custom or random port with auto-generated security token
 
@@ -837,6 +842,18 @@ app.whenReady().then(async () => {
 
   // Note: Web server is not auto-started - it starts when user enables web interface
   // via live:startServer IPC call from the renderer
+  //
+  // Container mode: if MAESTRO_WEB_PORT is set, auto-start the web server immediately
+  // so the app is accessible without any UI interaction.
+  if (process.env.MAESTRO_WEB_PORT) {
+    logger.info(`Container mode: auto-starting web server on port ${process.env.MAESTRO_WEB_PORT}`, 'Startup');
+    webServer = createWebServer();
+    webServer.start().then(({ port, url }) => {
+      logger.info(`Container web server ready → ${url} (port ${port})`, 'Startup');
+    }).catch((err: Error) => {
+      logger.error(`Container web server failed to start: ${err.message}`, 'Startup');
+    });
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -3131,3 +3148,4 @@ function setupProcessListeners() {
     });
   }
 }
+
