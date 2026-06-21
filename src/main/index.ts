@@ -43,6 +43,14 @@ interface BootstrapSettings {
 // ============================================================================
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// Container mode: disable hardware acceleration before ANY Electron initialization.
+// This prevents the GPU process from spawning, which would hang in a container
+// environment without a real GPU (even with --headless/--disable-gpu flags, the
+// hardware acceleration attempt can block app.whenReady() from resolving).
+if (process.env.MAESTRO_WEB_PORT) {
+  app.disableHardwareAcceleration();
+}
+
 // Capture the production data path before any modification
 // Used for stores that should be shared between dev and prod (e.g., agent configs)
 const productionDataPath = app.getPath('userData');
