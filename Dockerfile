@@ -33,8 +33,8 @@ FROM node:20-bookworm-slim
 
 # Electron runtime + Xvfb virtual display + system tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # D-Bus system daemon (Chromium/Electron crashes without it in containers)
-    dbus \
+    # D-Bus + Xvfb virtual display (both required to run Electron in containers)
+    dbus xvfb x11-utils \
     # Electron / Chromium runtime deps
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
     libdrm2 libgbm1 libgtk-3-0 libasound2 \
