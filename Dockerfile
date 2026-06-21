@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Maestro — Containerized Build
-# Runs the full Electron app with a virtual display (Xvfb).
+# Runs Electron in headless mode with D-Bus for Chromium desktop integration.
 # Access the app via the built-in Fastify web server.
 #
 # Required env vars:
@@ -33,8 +33,8 @@ FROM node:20-bookworm-slim
 
 # Electron runtime + Xvfb virtual display + system tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # Xvfb virtual framebuffer
-    xvfb \
+    # D-Bus system daemon (Chromium/Electron crashes without it in containers)
+    dbus \
     # Electron / Chromium runtime deps
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
     libdrm2 libgbm1 libgtk-3-0 libasound2 \
